@@ -1,0 +1,100 @@
+<mujoco model="aipick_stalk_scene">
+  <!-- The canonical stalk scene, shared by every stage from 1 onward.
+       Fruit + 5-segment pedicel + fixed spur. No gripper, no cavity, no contacts.
+
+       Naming, which the first draft got backwards:
+         j_az    the abscission zone  - seg4 to spur. Force read as a NORM.
+         j_in1..4 the internodes      - numbered from the fruit end, matching
+                                        the PyBullet "internode k/4" label.
+         fruit-seg0 is welded (no joint) and is where the STEM PULL is judged,
+                    on the AXIAL component only.
+
+       Segment mass and inertia are the values the PyBullet build actually ran
+       (changeDynamics overrode the constructor values; physics_frozen.json
+       records the pre-override numbers and is wrong here). -->
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.0041666667" gravity="0 0 -9.81" integrator="Euler">
+    <flag contact="disable"/>
+  </option>
+
+  <default>
+    <geom rgba="0.45 0.32 0.18 1"/>
+    <!-- Internode default. stiffness 0.030 and damping 0.0015 are STEM_STIFFNESS
+         and STEM_DAMPING: the PyBullet build applied exactly this law by hand as
+         an external torque at every internode, so the native ball joint is its
+         equivalent, not an approximation of it. -->
+    <joint type="ball" stiffness="0.030" damping="0.0015"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 0.3" dir="0 0 -1"/>
+
+    <geom name="spur" type="cylinder" fromto="-0.015 0 0.0012  0.015 0 0.0012"
+          size="0.0012" rgba="0.30 0.22 0.14 1"/>
+
+    <body name="seg4" pos="0 0 0">
+      <site name="s_az" pos="0 0 0" size="0.0006" rgba="1 0.4 0 1"/>
+      <!-- The abscission zone carried no restoring torque in the PyBullet build:
+           the chain torque ran between consecutive segments only. Damping is kept
+           because dropping the engine's per-body damping (a solver detail, not
+           physics) would otherwise leave this pendulum with no dissipation at all;
+           0.0015 reproduces its 0.53 s decay constant to within 0.2 %. -->
+      <joint name="j_az" stiffness="0" damping="0.0015"/>
+      <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+      <geom name="g4" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00192"/>
+
+      <body name="seg3" pos="0 0 -0.0044505">
+        <joint name="j_in4"/>
+        <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+        <geom name="g3" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00216"/>
+
+        <body name="seg2" pos="0 0 -0.0044505">
+          <joint name="j_in3"/>
+          <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+          <geom name="g2" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00240"/>
+
+          <body name="seg1" pos="0 0 -0.0044505">
+            <joint name="j_in2"/>
+            <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+            <geom name="g1" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00264"/>
+
+            <body name="seg0" pos="0 0 -0.0044505">
+              <joint name="j_in1"/>
+              <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+              <geom name="g0" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00288"/>
+
+              <body name="fruit" pos="0 0 -0.01495">
+                <site name="s_stem" pos="0 0 0.01495" size="0.0008" rgba="1 0 0 1"/>
+                <inertial pos="0 0 0" mass="0.0735807337962370"
+                          diaginertia="2.15835e-5 2.15835e-5 2.43276e-5"/>
+                <geom name="apple" type="ellipsoid" size="0.02875 0.02875 0.02530"
+                      rgba="0.75 0.18 0.16 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <sensor>
+    <!-- Forces. Two junctions, two different readings - see the note above. -->
+    <force name="f_stem" site="s_stem"/>
+    <force name="f_az"   site="s_az"/>
+
+    <!-- Segment axes, for the bend angles stage 3 needs. The abscission bend is
+         the top segment's axis against the original stem direction; the internode
+         bends are between consecutive segment axes. -->
+    <framezaxis name="ax4" objtype="body" objname="seg4"/>
+    <framezaxis name="ax3" objtype="body" objname="seg3"/>
+    <framezaxis name="ax2" objtype="body" objname="seg2"/>
+    <framezaxis name="ax1" objtype="body" objname="seg1"/>
+    <framezaxis name="ax0" objtype="body" objname="seg0"/>
+
+    <!-- Fruit orientation, for the twist. The abscission twist is measured on the
+         FRUIT, at the far end of the chain from where the bend is measured. -->
+    <framequat name="q_fruit" objtype="body" objname="fruit"/>
+  </sensor>
+</mujoco>

@@ -1,0 +1,90 @@
+<mujoco model="aipick_stage1_hang">
+  <!-- Stage 1: a single fruit hanging from a 5-segment pedicel on a fixed spur.
+       Gravity only. No gripper, no mesh, no cavity, no contacts.
+       Acceptance: axial force at the fruit-seg0 junction = 0.72 N (0.715-0.729 N).
+       Constants are frozen values; see mujoco_stage1_handoff_ko.md. -->
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.0041666667" gravity="0 0 -9.81" integrator="Euler">
+    <!-- Stage 1 has no contact pairs by design: the fruit ellipsoid overlaps the
+         pedicel because the cavity is not modelled yet. Any contact here would be
+         a numerical artefact, not physics. Re-enabled at stage 4. -->
+    <flag contact="disable"/>
+  </option>
+
+  <default>
+    <geom rgba="0.45 0.32 0.18 1"/>
+    <!-- Ball joints: stiffness stays 0 until the stage-3 decision (P2P-equivalent
+         vs native joint). Damping is transient-only and does not affect the
+         static axial force this stage measures. -->
+    <joint type="ball" stiffness="0" damping="0.0015"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 0.3" dir="0 0 -1"/>
+
+    <!-- Spur: fixed to the world. Radius 1.2 mm, length 30 mm. -->
+    <geom name="spur" type="cylinder" fromto="-0.015 0 0.0012  0.015 0 0.0012"
+          size="0.0012" rgba="0.30 0.22 0.14 1"/>
+
+    <!-- Pedicel, spur end to fruit end. Segment length 4.4505 mm.
+         Radius tapers 1.8 mm (spur) -> 3.0 mm (fruit); per-segment mean used.
+         Segment mass 2 g and inertia 2e-5 are solver-stability values: use as-is,
+         do not compare against an analytic slender-rod result. -->
+    <body name="seg4" pos="0 0 0">
+      <site name="s_spur" pos="0 0 0" size="0.0006" rgba="1 0.4 0 1"/>
+      <joint name="j4"/>
+      <inertial pos="0 0 -0.00222525" mass="0.002" diaginertia="2e-5 2e-5 2e-5"/>
+      <geom name="g4" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00192"/>
+
+      <body name="seg3" pos="0 0 -0.0044505">
+        <joint name="j3"/>
+        <inertial pos="0 0 -0.00222525" mass="0.002" diaginertia="2e-5 2e-5 2e-5"/>
+        <geom name="g3" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00216"/>
+
+        <body name="seg2" pos="0 0 -0.0044505">
+          <joint name="j2"/>
+          <inertial pos="0 0 -0.00222525" mass="0.002" diaginertia="2e-5 2e-5 2e-5"/>
+          <geom name="g2" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00240"/>
+
+          <body name="seg1" pos="0 0 -0.0044505">
+            <joint name="j1"/>
+            <inertial pos="0 0 -0.00222525" mass="0.002" diaginertia="2e-5 2e-5 2e-5"/>
+            <geom name="g1" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00264"/>
+
+            <body name="seg0" pos="0 0 -0.0044505">
+              <joint name="j0"/>
+              <inertial pos="0 0 -0.00222525" mass="0.002" diaginertia="2e-5 2e-5 2e-5"/>
+              <geom name="g0" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00288"/>
+
+              <!-- Fruit. Welded to seg0 (no joint), matching the PyBullet
+                   JOINT_FIXED at this junction.
+                   Centre sits 14.95 mm below the seg0 tip = R_POL 25.30 - cavity
+                   depth 10.35. Mass and inertia are specified explicitly; the
+                   engine must not derive them from geometry. The cavity is cut
+                   from geometry only and is never subtracted from mass. -->
+              <body name="fruit" pos="0 0 -0.01495">
+                <site name="s_az" pos="0 0 0.01495" size="0.0008" rgba="1 0 0 1"/>
+                <inertial pos="0 0 0" mass="0.0735807337962370"
+                          diaginertia="2.15835e-5 2.15835e-5 2.43276e-5"/>
+                <geom name="apple" type="ellipsoid" size="0.02875 0.02875 0.02530"
+                      rgba="0.75 0.18 0.16 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <sensor>
+    <!-- s_az: interaction force across the fruit-seg0 junction. Expect 0.72 N.
+         s_spur: same at the spur attachment. Expect 0.82 N (fruit + 10 g stem).
+         Both are reported in the site frame; sign convention is checked by hand
+         in stage1_verify. -->
+    <force name="f_az" site="s_az"/>
+    <force name="f_spur" site="s_spur"/>
+    <framequat name="q_fruit" objtype="body" objname="fruit"/>
+  </sensor>
+</mujoco>

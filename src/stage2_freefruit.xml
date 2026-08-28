@@ -1,0 +1,23 @@
+<mujoco model="aipick_stage2_freefruit">
+  <!-- Stage 2 helper: the fruit alone, free-floating, no gravity.
+       Purpose is to confirm that MuJoCo actually USES the inertia we specified,
+       not merely that it stored it. Applying a known torque and reading the
+       angular acceleration recovers I directly.
+
+       Same fruit body as stage1_hang.xml. Nothing else in the scene. -->
+
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.0041666667" gravity="0 0 0" integrator="Euler">
+    <flag contact="disable"/>
+  </option>
+
+  <worldbody>
+    <body name="fruit" pos="0 0 0">
+      <freejoint name="free"/>
+      <inertial pos="0 0 0" mass="0.0735807337962370"
+                diaginertia="2.15835e-5 2.15835e-5 2.43276e-5"/>
+      <geom name="apple" type="ellipsoid" size="0.02875 0.02875 0.02530"
+            rgba="0.75 0.18 0.16 1"/>
+    </body>
+  </worldbody>
+</mujoco>

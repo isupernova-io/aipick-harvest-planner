@@ -1,0 +1,160 @@
+<mujoco model="aipick_harvest_detached">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.004166666667" gravity="0 0 -9.81" integrator="Euler"/>
+
+  <asset>
+    <texture name="sky" type="skybox" builtin="flat" rgb1="1 1 1" rgb2="1 1 1"
+             width="256" height="256"/>
+  </asset>
+  <visual>
+    <global offwidth="1280" offheight="960"/>
+    <headlight ambient="0.62 0.62 0.62" diffuse="0.45 0.45 0.45" specular="0.1 0.1 0.1"/>
+  </visual>
+
+  <default>
+    <geom rgba="0.62 0.47 0.26 1"/>
+    <joint type="ball" stiffness="0.03" damping="0.0015"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 0.3" dir="0 0 -1"/>
+    <geom name="spur" type="cylinder" fromto="0 0 0  0 0 0.03" size="0.0012"
+          rgba="0.30 0.22 0.14 1"/>
+    <body name="fruit" pos="0 0 -0.0372025">
+        <freejoint name="fruit_free"/>
+        <site name="s_stem" pos="0 0 0.01495" size="0.0008" rgba="1 0 0 1"/>
+        <inertial pos="0 0 0" mass="0.073580733796237" diaginertia="2.15835e-05 2.15835e-05 2.43276e-05"/>
+        <geom name="apple" type="ellipsoid" size="0.02875 0.02875 0.0253"
+              condim="4" priority="1" friction="0.45 0.005 0" rgba="0.75 0.18 0.16 1"/>
+      </body>
+    <body name="seg4" pos="0 0 0">
+        <site name="s_az" pos="0 0 0" size="0.0006" rgba="1 0.4 0 1"/>
+        <joint name="j_az_x" type="hinge" axis="1 0 0" stiffness="0" damping="0.0015"/>
+        <joint name="j_az_y" type="hinge" axis="0 1 0" stiffness="0" damping="0.0015"/>
+        <joint name="j_az_t" type="hinge" axis="0 0 1" stiffness="0.020999999999999998" damping="0.0015"/>
+        <inertial pos="0 0 -0.00222525" mass="0.02" diaginertia="2e-05 2e-05 1e-05"/>
+        <geom name="g4" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00192"
+              group="3" rgba="0 0 0 0"/>
+        <geom name="v4" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0012"
+              contype="0" conaffinity="0" group="2" rgba="0.30 0.22 0.14 1"/>
+        <body name="seg3" pos="0 0 -0.0044505">
+        <joint name="j_in4"/>
+        <inertial pos="0 0 -0.00222525" mass="0.02" diaginertia="2e-05 2e-05 1e-05"/>
+        <geom name="g3" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00216"
+              group="3" rgba="0 0 0 0"/>
+        <geom name="v3" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0012"
+              contype="0" conaffinity="0" group="2" rgba="0.30 0.22 0.14 1"/>
+        <body name="seg2" pos="0 0 -0.0044505">
+        <joint name="j_in3"/>
+        <inertial pos="0 0 -0.00222525" mass="0.02" diaginertia="2e-05 2e-05 1e-05"/>
+        <geom name="g2" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0024"
+              group="3" rgba="0 0 0 0"/>
+        <geom name="v2" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0012"
+              contype="0" conaffinity="0" group="2" rgba="0.30 0.22 0.14 1"/>
+        <body name="seg1" pos="0 0 -0.0044505">
+        <joint name="j_in2"/>
+        <inertial pos="0 0 -0.00222525" mass="0.02" diaginertia="2e-05 2e-05 1e-05"/>
+        <geom name="g1" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00264"
+              group="3" rgba="0 0 0 0"/>
+        <geom name="v1" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0012"
+              contype="0" conaffinity="0" group="2" rgba="0.30 0.22 0.14 1"/>
+        <body name="seg0" pos="0 0 -0.0044505">
+        <joint name="j_in1"/>
+        <inertial pos="0 0 -0.00222525" mass="0.02" diaginertia="2e-05 2e-05 1e-05"/>
+        <geom name="g0" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00288"
+              group="3" rgba="0 0 0 0"/>
+        <geom name="v0" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.0012"
+              contype="0" conaffinity="0" group="2" rgba="0.30 0.22 0.14 1"/>
+        
+      </body>
+      </body>
+      </body>
+      </body>
+      </body>
+
+    <body name="palm" pos="0 0 -0.12">
+      <freejoint name="wrist"/>
+      <site name="s_palm" pos="0 0 0" size="0.001" rgba="0 1 1 1"/>
+      <inertial pos="0 0 0.004" mass="0.3"
+                diaginertia="0.01 0.01 0.01"/>
+      <geom name="gbase" type="cylinder" fromto="0 0 0  0 0 0.008" size="0.017425"
+            mass="0" rgba="0.10 0.42 0.18 1"/>
+      <geom name="handle" type="cylinder" pos="0 0 -0.055" size="0.009 0.055"
+            contype="0" conaffinity="0" group="2" mass="0" rgba="0.08 0.08 0.09 1"/>
+      <geom name="axisrod" type="cylinder" pos="0 0 -0.078" size="0.0011 0.075"
+            contype="0" conaffinity="0" group="2" mass="0" rgba="0.10 0.85 0.95 1"/>
+      <body name="lo0" pos="0.010925 0 0.004" quat="0.939692621 -0 0.342020143 0">
+        <joint name="fj0" type="hinge" axis="0 -1 -0" range="0 1.2" damping="0.002" armature="1e-5"/>
+        <geom name="glo0" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035"
+              mass="0.004" rgba="1 0.6 0.1 1"/>
+        <body name="up0" pos="0 0 0.04025" quat="0.939692621 0 -0.342020143 -0">
+          <geom name="gup0" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035"
+                mass="0.003" rgba="1 0.66 0.18 1"/>
+          <geom name="pad0" type="cylinder" pos="-0.001925 0 0.0138"
+                size="0.004375 0.010764"
+                contype="0" conaffinity="0" group="2" mass="0" rgba="0.09 0.09 0.10 1"/>
+        </body>
+      </body>
+      <body name="lo1" pos="-0.0054625 0.00946132754 0.004" quat="0.939692621 -0.296198133 -0.171010072 0">
+        <joint name="fj1" type="hinge" axis="0.866025404 0.5 -0" range="0 1.2" damping="0.002" armature="1e-5"/>
+        <geom name="glo1" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035"
+              mass="0.004" rgba="1 0.6 0.1 1"/>
+        <body name="up1" pos="0 0 0.04025" quat="0.939692621 0.296198133 0.171010072 -0">
+          <geom name="gup1" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035"
+                mass="0.003" rgba="1 0.66 0.18 1"/>
+          <geom name="pad1" type="cylinder" pos="-0.001925 0 0.0138"
+                size="0.004375 0.010764"
+                contype="0" conaffinity="0" group="2" mass="0" rgba="0.09 0.09 0.10 1"/>
+        </body>
+      </body>
+      <body name="lo2" pos="-0.0054625 -0.00946132754 0.004" quat="0.939692621 0.296198133 -0.171010072 0">
+        <joint name="fj2" type="hinge" axis="-0.866025404 0.5 -0" range="0 1.2" damping="0.002" armature="1e-5"/>
+        <geom name="glo2" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035"
+              mass="0.004" rgba="1 0.6 0.1 1"/>
+        <body name="up2" pos="0 0 0.04025" quat="0.939692621 -0.296198133 0.171010072 -0">
+          <geom name="gup2" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035"
+                mass="0.003" rgba="1 0.66 0.18 1"/>
+          <geom name="pad2" type="cylinder" pos="-0.001925 0 0.0138"
+                size="0.004375 0.010764"
+                contype="0" conaffinity="0" group="2" mass="0" rgba="0.09 0.09 0.10 1"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude body1="fruit" body2="seg0"/>
+    <exclude body1="fruit" body2="seg1"/>
+    <exclude body1="fruit" body2="seg2"/>
+    <exclude body1="fruit" body2="seg3"/>
+    <exclude body1="fruit" body2="seg4"/>
+    <exclude body1="palm" body2="lo0"/>
+    <exclude body1="palm" body2="lo1"/>
+    <exclude body1="palm" body2="lo2"/>
+    <exclude body1="palm" body2="up0"/>
+    <exclude body1="palm" body2="up1"/>
+    <exclude body1="palm" body2="up2"/>
+    <exclude body1="world" body2="seg4"/>
+  </contact>
+  <equality>
+    <weld name="grasp" body1="palm" body2="fruit" active="false" solref="0.004 1"/>
+  </equality>
+
+  <actuator>
+    <position name="a_fj0" joint="fj0" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+    <position name="a_fj1" joint="fj1" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+    <position name="a_fj2" joint="fj2" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+  </actuator>
+
+  <sensor>
+    <force name="f_stem" site="s_stem"/>
+    <force name="f_az"   site="s_az"/>
+    <framezaxis name="ax4" objtype="body" objname="seg4"/>
+    <framezaxis name="ax3" objtype="body" objname="seg3"/>
+    <framezaxis name="ax2" objtype="body" objname="seg2"/>
+    <framezaxis name="ax1" objtype="body" objname="seg1"/>
+    <framezaxis name="ax0" objtype="body" objname="seg0"/>
+    <framequat name="q_fruit" objtype="body" objname="fruit"/>
+    <framequat name="q_palm"  objtype="body" objname="palm"/>
+  </sensor>
+</mujoco>

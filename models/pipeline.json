@@ -1,0 +1,33 @@
+{
+ "trees": "trees_measured_pose.csv",
+ "arm": {
+  "half_x": 0.2,
+  "lift": 0.6
+ },
+ "stations": 20,
+ "threshold": 0.0,
+ "sweep": true,
+ "picker": "rule",
+ "dynamics": true,
+ "components": {
+  "outcome": "models/outcome.pkl",
+  "dynamics": "models/dynamics.joblib",
+  "station_planner": "models/station_planner_k20.pt",
+  "pick_policy": "models/pick_policy.pt",
+  "planner_module": "src/planner.py"
+ },
+ "demo": {
+  "tree": 23,
+  "stops": 24,
+  "stage1_stops": 20,
+  "sweep_stops": 4,
+  "on_tree": 120,
+  "robot_reach": 68,
+  "in_plan": 68,
+  "attempts": 68,
+  "expected_premium": 56.1,
+  "expected_utility": 52.17,
+  "left_for_a_person": 0,
+  "seconds": 1308.2
+ }
+}

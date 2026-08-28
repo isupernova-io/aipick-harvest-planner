@@ -1,0 +1,177 @@
+<mujoco model="aipick_grasp_scene">
+  <!-- The canonical stalk scene, shared by every stage from 1 onward.
+       Fruit + 5-segment pedicel + fixed spur. No gripper, no cavity, no contacts.
+
+       Naming, which the first draft got backwards:
+         j_az    the abscission zone  - seg4 to spur. Force read as a NORM.
+         j_in1..4 the internodes      - numbered from the fruit end, matching
+                                        the PyBullet "internode k/4" label.
+         fruit-seg0 is welded (no joint) and is where the STEM PULL is judged,
+                    on the AXIAL component only.
+
+       Segment mass and inertia are the values the PyBullet build actually ran
+       (changeDynamics overrode the constructor values; physics_frozen.json
+       records the pre-override numbers and is wrong here). -->
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <option timestep="0.0041666667" gravity="0 0 -9.81" integrator="Euler">
+    <!-- contacts are ON from stage 4 -->
+  </option>
+
+  <default>
+    <geom rgba="0.45 0.32 0.18 1"/>
+    <!-- Internode default. stiffness 0.030 and damping 0.0015 are STEM_STIFFNESS
+         and STEM_DAMPING: the PyBullet build applied exactly this law by hand as
+         an external torque at every internode, so the native ball joint is its
+         equivalent, not an approximation of it. -->
+    <joint type="ball" stiffness="0.030" damping="0.0015"/>
+  </default>
+
+  <worldbody>
+    <light pos="0 0 0.3" dir="0 0 -1"/>
+
+    <geom name="spur" type="cylinder" fromto="-0.015 0 0.0012  0.015 0 0.0012"
+          size="0.0012" rgba="0.30 0.22 0.14 1"/>
+
+    <body name="seg4" pos="0 0 0">
+      <site name="s_az" pos="0 0 0" size="0.0006" rgba="1 0.4 0 1"/>
+      <!-- The abscission zone carried no restoring torque in the PyBullet build:
+           the chain torque ran between consecutive segments only. Damping is kept
+           because dropping the engine's per-body damping (a solver detail, not
+           physics) would otherwise leave this pendulum with no dissipation at all;
+           0.0015 reproduces its 0.53 s decay constant to within 0.2 %. -->
+      <joint name="j_az" stiffness="0" damping="0.0015"/>
+      <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+      <geom name="g4" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00192"/>
+
+      <body name="seg3" pos="0 0 -0.0044505">
+        <joint name="j_in4"/>
+        <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+        <geom name="g3" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00216"/>
+
+        <body name="seg2" pos="0 0 -0.0044505">
+          <joint name="j_in3"/>
+          <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+          <geom name="g2" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00240"/>
+
+          <body name="seg1" pos="0 0 -0.0044505">
+            <joint name="j_in2"/>
+            <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+            <geom name="g1" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00264"/>
+
+            <body name="seg0" pos="0 0 -0.0044505">
+              <joint name="j_in1"/>
+              <inertial pos="0 0 -0.00222525" mass="0.020" diaginertia="2e-5 2e-5 1e-5"/>
+              <geom name="g0" type="cylinder" fromto="0 0 0  0 0 -0.0044505" size="0.00288"/>
+
+              <body name="fruit" pos="0 0 -0.01495">
+                <site name="s_stem" pos="0 0 0.01495" size="0.0008" rgba="1 0 0 1"/>
+                <inertial pos="0 0 0" mass="0.0735807337962370"
+                          diaginertia="2.15835e-5 2.15835e-5 2.43276e-5"/>
+                <geom name="apple" type="ellipsoid" size="0.02875 0.02875 0.02530" friction="1.8 0.005 0.0001"
+                      rgba="0.75 0.18 0.16 1"/>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Three-finger cradle. Mocap base: the wrist is kinematically driven, which is
+         what changeConstraint on a fixed base joint did in the PyBullet build.
+         At th=0 the lower segment tilts 40 deg out and the upper segment stands
+         vertical; closing rotates the lower back toward vertical and tilts the
+         upper inward, so the cage narrows around the fruit rather than pinching it.
+         First contact is near th=0.24 rad; FINGER_CLOSE=0.32 is just past it. -->
+    <body name="palm" pos="0 0 -0.12">
+      <freejoint name="wrist"/>
+      <site name="s_palm" pos="0 0 0" size="0.001" rgba="0 1 1 1"/>
+      <inertial pos="0 0 0.004" mass="0.300" diaginertia="2e-4 2e-4 3.5e-4"/>
+      <geom name="gbase" type="cylinder" fromto="0 0 0  0 0 0.008" size="0.017425"
+            rgba="0.25 0.28 0.32 1" mass="0"/>
+      <body name="lo0" pos="0.010925 0 0.004" quat="0.939692621 -0 0.342020143 0">
+        <joint name="fj0" type="hinge" axis="0 -1 -0" range="0 1.2" damping="0.002" armature="1e-6"/>
+        <geom name="glo0" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035" mass="0.004"/>
+        <body name="up0" pos="0 0 0.04025" quat="0.939692621 0 -0.342020143 -0">
+          <geom name="gup0" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035" mass="0.003"/>
+        </body>
+      </body>
+      <body name="lo1" pos="-0.0054625 0.00946132754 0.004" quat="0.939692621 -0.296198133 -0.171010072 0">
+        <joint name="fj1" type="hinge" axis="0.866025404 0.5 -0" range="0 1.2" damping="0.002" armature="1e-6"/>
+        <geom name="glo1" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035" mass="0.004"/>
+        <body name="up1" pos="0 0 0.04025" quat="0.939692621 0.296198133 0.171010072 -0">
+          <geom name="gup1" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035" mass="0.003"/>
+        </body>
+      </body>
+      <body name="lo2" pos="-0.0054625 -0.00946132754 0.004" quat="0.939692621 0.296198133 -0.171010072 0">
+        <joint name="fj2" type="hinge" axis="-0.866025404 0.5 -0" range="0 1.2" damping="0.002" armature="1e-6"/>
+        <geom name="glo2" type="capsule" fromto="0 0 0  0 0 0.04025" size="0.0035" mass="0.004"/>
+        <body name="up2" pos="0 0 0.04025" quat="0.939692621 -0.296198133 0.171010072 -0">
+          <geom name="gup2" type="capsule" fromto="0 0 0  0 0 0.0276" size="0.0035" mass="0.003"/>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+
+  <contact>
+    <!-- The calyx cavity is not modelled as geometry. Its only mechanical role at
+         this stage is to let the pedicel enter the fruit without contact, so it is
+         represented as a contact exclusion instead of a mesh. The fingers still
+         meet the true outer ellipsoid, which is what the grasp depends on. -->
+    <exclude body1="fruit" body2="seg0"/>
+    <exclude body1="fruit" body2="seg1"/>
+    <exclude body1="fruit" body2="seg2"/>
+    <exclude body1="fruit" body2="seg3"/>
+    <exclude body1="fruit" body2="seg4"/>
+
+    <!-- The finger mounts sit inside the base plate by construction (mount ring
+         10.9 mm, plate rim 17.4 mm), so plate-against-finger contact is geometry
+         overlap, not physics. MuJoCo does not filter these automatically the way
+         the URDF parent-child rule did. Left in, they registered 32 N and swamped
+         every real reading. -->
+    <exclude body1="palm" body2="lo0"/>
+    <exclude body1="palm" body2="lo1"/>
+    <exclude body1="palm" body2="lo2"/>
+    <exclude body1="palm" body2="up0"/>
+    <exclude body1="palm" body2="up1"/>
+    <exclude body1="palm" body2="up2"/>
+
+    <!-- seg4 is joined to the spur at the abscission point; their geoms touch there
+         by construction. -->
+    <exclude body1="world" body2="seg4"/>
+  </contact>
+
+  <equality>
+    <!-- The grasp. PyBullet held the fruit with an explicit rigid constraint at
+         GRASP_STRENGTH = 60 N, not with friction alone, and an earlier build of it
+         detached 59.3 % of the time. Switched on once the fingers have closed. -->
+    <weld name="grasp" body1="palm" body2="fruit" active="false" solref="0.004 1"/>
+  </equality>
+
+  <actuator>
+    <position name="a_fj0" joint="fj0" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+    <position name="a_fj1" joint="fj1" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+    <position name="a_fj2" joint="fj2" kp="0.6" ctrlrange="0 1.2" forcerange="-1.5 1.5"/>
+  </actuator>
+
+  <sensor>
+    <!-- Forces. Two junctions, two different readings - see the note above. -->
+    <force name="f_stem" site="s_stem"/>
+    <force name="f_az"   site="s_az"/>
+
+    <!-- Segment axes, for the bend angles stage 3 needs. The abscission bend is
+         the top segment's axis against the original stem direction; the internode
+         bends are between consecutive segment axes. -->
+    <framezaxis name="ax4" objtype="body" objname="seg4"/>
+    <framezaxis name="ax3" objtype="body" objname="seg3"/>
+    <framezaxis name="ax2" objtype="body" objname="seg2"/>
+    <framezaxis name="ax1" objtype="body" objname="seg1"/>
+    <framezaxis name="ax0" objtype="body" objname="seg0"/>
+
+    <!-- Fruit orientation, for the twist. The abscission twist is measured on the
+         FRUIT, at the far end of the chain from where the bend is measured. -->
+    <framequat name="q_fruit" objtype="body" objname="fruit"/>
+  </sensor>
+</mujoco>
