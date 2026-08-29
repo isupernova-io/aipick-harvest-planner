@@ -12,9 +12,11 @@ one. So the environment was built first, checked against physics, and then used 
 labels.
 
 ```
-FRESH detections  →  physics scenes  →  31,960 labelled picks  →  outcome model  →  plan
-                                                                        ↓
-                                                     the plan is re-run against the physics
+orchard imagery  →  8,133 detections  →  physics scenes  →  31,960 labelled picks
+   3,381 frames      911 filtered out      one per fruit         four apertures each
+   9,044 fruit                                                          │
+                                                                        ▼
+              the plan is re-run against the physics  ◀──  plan  ◀──  outcome model
 ```
 
 ---
@@ -23,8 +25,8 @@ FRESH detections  →  physics scenes  →  31,960 labelled picks  →  outcome 
 
 | | |
 |---|---|
-| `src/` | Six modules and nine MJCF scene definitions |
-| `01`–`08` notebooks | Data preparation through to report figures, in order |
+| `src/` | Six modules and the MJCF scene definitions |
+| `00`–`08` notebooks | Extraction through to report figures, in order |
 | `models/` | Four trained weight files |
 | `data/` | The derived dataset. **The FRESH source is not redistributed** |
 
@@ -59,25 +61,46 @@ No GPU. Everything in this repository was produced on an ordinary desktop.
 ### The source data
 
 This repository does not include the FRESH dataset (Son et al., 2024), whose redistribution
-terms are not clear. Obtain it from the authors and place the crops and `manifest.csv` under
-`apple_crops/`; the generator reproduces the derived dataset from there.
+terms are not clear. Obtain it from the authors:
 
 ```
 https://github.com/sejong-rcv/FRESH
 ```
 
+What arrives is orchard imagery — 3,381 RGB-D frames of apple trees carrying 9,044 labelled
+fruit, one to eleven per frame. `00_extraction` turns that into the per-fruit crops the rest of
+the pipeline works from. It keeps 8,133 and drops 911:
+
+| Dropped | Count | Why |
+|---|---:|---|
+| Ignore class | 4 | Withheld by the annotator |
+| Min bbox side under 104 px | 167 | Too distant for a stable diameter |
+| Cut by the frame edge | 30 | Part of the shape outside the image |
+| Visibility under 0.3 | 709 | Occluded by leaves or other fruit |
+| Fewer than 200 points | 1 | No 3D shape could be built |
+
+**The visibility rule is the one to keep in mind.** Fruit growing in a cluster occlude each
+other, so they are dropped together — the surviving detections are sparser than the orchard is.
+
 ### Set the root
 
-Every notebook reads `AIPICK_ROOT`, defaulting to `C:\aipick\final`. Point it at your clone:
+The notebooks resolve paths from where they are opened, so a clone runs with no setup. Two
+environment variables override that if your data sits elsewhere:
 
 ```powershell
-$env:AIPICK_ROOT = "C:\path\to\this\repo"
+$env:AIPICK_ROOT  = "C:\path\to\this\repo"          # optional
+$env:AIPICK_FRESH = "C:\path\to\papple_trainval"     # 00_extraction only
 ```
+
+`AIPICK_FRESH` must point at the folder that directly contains `calib/`, `depth/`, `image/` and
+`label/`. Set it before the first cell runs — a variable set in a shell does not reach a kernel
+that is already up.
 
 ### Order
 
 | Step | Notebook | Time |
 |---|---|---|
+| 0 | `00_extraction` — filter the FRESH labels, write crops and `manifest.csv` | ~18 min |
 | 1 | `01_data_preparation` — verify detections, build derived features | minutes |
 | 2 | generator — 31,960 counterfactual rows | 5–7 h, six shards |
 | 3 | canopy generation and pose re-measurement | tens of minutes |
