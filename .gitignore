@@ -45,3 +45,5 @@ Thumbs.db
 # Staging helper ? belongs to the working tree, not the release.
 stage_repo.ps1
 patch_notebooks.py
+
+*.ps1
